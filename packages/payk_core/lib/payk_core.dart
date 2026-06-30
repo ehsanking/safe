@@ -9,8 +9,20 @@
 library;
 
 export 'src/crypto/aead.dart';
+export 'src/delivery/outbound_queue.dart';
 export 'src/identity/identity.dart';
 export 'src/identity/short_code.dart';
 export 'src/mnemonic/mnemonic.dart';
 export 'src/mnemonic/wordlist_english.dart' show englishWordlist;
+export 'src/session/secure_session.dart';
+export 'src/session/signal_account.dart';
 export 'src/transport/transport.dart';
+
+// Re-export the libsignal types that surface in payk_core's public API, so
+// consumers need not import libsignal_protocol_dart directly for the basics.
+export 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart'
+    show
+        PreKeyBundle,
+        SignalProtocolAddress,
+        CiphertextMessage,
+        DuplicateMessageException;
