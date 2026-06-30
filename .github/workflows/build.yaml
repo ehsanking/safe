@@ -76,3 +76,37 @@ jobs:
           name: tincan-windows-x64
           path: app/build/windows/x64/runner/Release/
           if-no-files-found: error
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Ensure platform scaffolding
+        working-directory: app
+        run: flutter create . --project-name tincan --platforms=macos
+
+      - name: Install dependencies
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build macOS
+        working-directory: app
+        run: flutter build macos --release
+
+      - name: Zip .app bundle
+        working-directory: app
+        run: |
+          APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
+          ditto -c -k --sequesterRsrc --keepParent "$APP" tincan-macos.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tincan-macos
+          path: app/tincan-macos.zip
+          if-no-files-found: error

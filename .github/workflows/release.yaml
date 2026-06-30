@@ -53,6 +53,9 @@ jobs:
               sources").
             - **Windows**: `Tincan-${{ env.TAG }}-windows-x64.zip` — unzip and run
               `tincan.exe`.
+            - **macOS**: `Tincan-${{ env.TAG }}-macos.zip` — unzip; the app is
+              unsigned, so right-click → Open the first time (or run
+              `xattr -dr com.apple.quarantine Tincan.app`).
             - **Linux**: `Tincan-${{ env.TAG }}-linux-x64.tar.gz` — extract and run
               `./tincan`.
 
@@ -111,3 +114,30 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: true
           files: Tincan-${{ env.TAG }}-linux-x64.tar.gz
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: app
+        run: flutter create . --project-name tincan --platforms=macos
+      - working-directory: app
+        run: flutter pub get
+      - working-directory: app
+        run: flutter build macos --release
+      - name: Stage artifact
+        working-directory: app
+        run: |
+          APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "../Tincan-${TAG}-macos.zip"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Tincan ${{ env.TAG }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: Tincan-${{ env.TAG }}-macos.zip
