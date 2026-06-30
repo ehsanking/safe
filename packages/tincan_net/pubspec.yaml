@@ -1,0 +1,20 @@
+name: tincan_net
+description: >-
+  Peer-to-peer transport for Tincan built on dart_libp2p (mDNS discovery, DHT
+  routing, hole-punching/relay NAT traversal), implementing the Transport
+  interface from tincan_core. Isolated here so the heavy, single-author libp2p
+  dependency stays swappable and out of the crypto core.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  tincan_core:
+    path: ../tincan_core
+  dart_libp2p: ^1.0.3
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^5.0.0

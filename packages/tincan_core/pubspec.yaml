@@ -1,0 +1,23 @@
+name: tincan_core
+description: >-
+  Pure-Dart cryptography and protocol core for the Tincan serverless,
+  end-to-end-encrypted messenger. No Flutter dependency, so it runs and is
+  unit-tested on plain Dart and is reusable across Android, Windows and beyond.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  cryptography_plus: ^3.0.0
+  crypto: ^3.0.0
+  # Pinned EXACTLY to 0.7.2: it is the only libsignal release on protobuf ^3.x,
+  # which is required to coexist with dart_libp2p (see packages/tincan_net).
+  # 0.7.3+/0.8.x move to protobuf 4/6 and conflict. Re-evaluate if libp2p ever
+  # supports protobuf 6. The Signal protocol logic is unchanged across these.
+  libsignal_protocol_dart: 0.7.2
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^5.0.0

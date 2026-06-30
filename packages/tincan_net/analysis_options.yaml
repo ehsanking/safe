@@ -1,0 +1,9 @@
+include: package:lints/recommended.yaml
+
+# Note: strict-casts is intentionally NOT enabled here (unlike tincan_core),
+# because the dart_libp2p surface returns some dynamics that would otherwise
+# require noisy casts at every call site.
+
+linter:
+  rules:
+    - prefer_final_locals
