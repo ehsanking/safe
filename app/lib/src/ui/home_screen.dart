@@ -102,8 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 final msgs = widget.engine.history[c.shortCode];
                 final last =
                     (msgs != null && msgs.isNotEmpty) ? msgs.last : null;
+                final initial =
+                    c.label.isNotEmpty ? c.label.substring(0, 1) : '?';
                 return ListTile(
-                  leading: CircleAvatar(child: Text(c.label.characters.first)),
+                  leading: CircleAvatar(child: Text(initial)),
                   title: Text(c.label),
                   subtitle: Text(
                     last?.text ?? ShortCode.format(c.shortCode),
