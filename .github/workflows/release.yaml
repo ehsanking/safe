@@ -1,0 +1,113 @@
+name: Release
+
+# Push a version tag (e.g. v0.1.0) to build the app for Android, Windows and
+# Linux and publish them as downloadable assets on a GitHub Release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  android:
+    name: Android (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: app
+        run: flutter create . --project-name tincan --platforms=android
+      - working-directory: app
+        run: flutter pub get
+      - working-directory: app
+        run: flutter build apk --debug
+      - name: Stage artifact
+        run: cp app/build/app/outputs/flutter-apk/app-debug.apk "Tincan-${TAG}-android.apk"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Tincan ${{ env.TAG }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: Tincan-${{ env.TAG }}-android.apk
+          body: |
+            Experimental Tincan ${{ env.TAG }} builds.
+
+            - **Android**: `Tincan-${{ env.TAG }}-android.apk` (debug-signed so it
+              installs without a Play account; enable "install from unknown
+              sources").
+            - **Windows**: `Tincan-${{ env.TAG }}-windows-x64.zip` — unzip and run
+              `tincan.exe`.
+            - **Linux**: `Tincan-${{ env.TAG }}-linux-x64.tar.gz` — extract and run
+              `./tincan`.
+
+            ⚠️ Experimental: the Dart crypto implementations are not yet
+            independently audited. See SECURITY.md.
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: app
+        run: flutter create . --project-name tincan --platforms=windows
+      - working-directory: app
+        run: flutter pub get
+      - working-directory: app
+        run: flutter build windows --release
+      - name: Stage artifact
+        shell: pwsh
+        run: Compress-Archive -Path app/build/windows/x64/runner/Release/* -DestinationPath "Tincan-$env:TAG-windows-x64.zip"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Tincan ${{ env.TAG }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: Tincan-${{ env.TAG }}-windows-x64.zip
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: app
+        run: flutter create . --project-name tincan --platforms=linux
+      - working-directory: app
+        run: flutter pub get
+      - working-directory: app
+        run: flutter build linux --release
+      - name: Stage artifact
+        run: tar czf "Tincan-${TAG}-linux-x64.tar.gz" -C app/build/linux/x64/release/bundle .
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Tincan ${{ env.TAG }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: Tincan-${{ env.TAG }}-linux-x64.tar.gz
